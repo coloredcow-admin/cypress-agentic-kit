@@ -17,9 +17,9 @@ Please do the following:
    https://github.com/abhilashabattu97/cypress-agentic-kit
 
 2. Update only the Cypress Agentic Kit files in this project. **Only touch kit-specific files, leave everything else untouched:**
-   - `knowledge-base/` — only add or update kit files (`00-master.md`, `01-setup-run.md`, `02-test-writing.md`). Do not touch any other files in this directory (they may belong to the project's own agentic system or other tools). Do not overwrite kit files that have local modifications — if the file exists and has been customized, skip it.
-   - `agents/` — only add or update kit agent files (`cypress-setup-agent.md`, `cypress-test-writer-agent.md`). Do not touch any other agent files in this directory.
-   - `prompts/` — only add or update kit prompt files (`bootstrap.md`, `test-writer.md`, `sync.md`). Do not touch any other prompt files.
+   - `knowledge-base/` — only add or update kit files (`00-master.md`, `01-setup-run.md`, `02-test-writing.md`, `03-manual-test-cases.md`). Do not touch any other files in this directory (they may belong to the project's own agentic system or other tools). Do not overwrite kit files that have local modifications — if the file exists and has been customized, skip it.
+   - `agents/` — only add or update kit agent files (`cypress-setup-agent.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`). Do not touch any other agent files in this directory.
+   - `prompts/` — only add or update kit prompt files (`bootstrap.md`, `test-writer.md`, `manual-test-generator.md`, `sync.md`). Do not touch any other prompt files.
 
 3. Update `knowledge-base/00-master.md`:
    - Add any new Cypress kit section entries that don't already exist.

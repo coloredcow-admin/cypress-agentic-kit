@@ -42,13 +42,16 @@ cypress-agentic-kit/
 ├── knowledge-base/
 │   ├── 00-master.md                   # Index — lists all sections + agent mappings
 │   ├── 01-setup-run.md               # Setup runbook (11 steps)
-│   └── 02-test-writing.md            # Test writing standards (10 sections)
+│   ├── 02-test-writing.md            # Test writing standards (10 sections)
+│   └── 03-manual-test-cases.md       # Manual test case generation (6 sections)
 ├── agents/
 │   ├── cypress-setup-agent.md         # Setup agent prompt
-│   └── cypress-test-writer-agent.md   # Test writer agent prompt
+│   ├── cypress-test-writer-agent.md   # Test writer agent prompt
+│   └── manual-test-generator-agent.md # Manual test case generator agent prompt
 └── prompts/
     ├── bootstrap.md                   # One prompt to install everything
     ├── test-writer.md                 # One prompt to start writing tests
+    ├── manual-test-generator.md       # One prompt to generate manual test cases
     └── sync.md                        # One prompt to update kit files
 ```
 
@@ -70,6 +73,15 @@ After Cypress is set up, use the test writer agent to generate tests:
 4. It writes the test, adds `data-cy` selectors to your app code, and gives you a summary.
 
 Already have the kit installed from an earlier version? Run [`prompts/sync.md`](prompts/sync.md) first to pull the latest files.
+
+## Generating Manual Test Cases
+
+Generate structured manual test cases for any feature — before or during development:
+
+1. Paste the prompt from [`prompts/manual-test-generator.md`](prompts/manual-test-generator.md) into your Claude session.
+2. The agent asks you for the feature name and description.
+3. It generates test cases across 4 categories: Functional, UI, Interdependency, and Edge Cases.
+4. Review and share with your QA team. Later, use the test writer agent to automate selected cases.
 
 ## What's Coming Next
 

@@ -14,6 +14,7 @@
 |--------------------------|--------------------------|
 | cypress-setup-agent      | `01-setup-run.md`        |
 | cypress-test-writer-agent | `02-test-writing.md`     |
+| manual-test-generator-agent | `03-manual-test-cases.md` |
 
 ## Execution Rules
 
