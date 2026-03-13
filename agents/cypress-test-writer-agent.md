@@ -28,6 +28,12 @@ Your job is to write Cypress e2e tests for any project that already has Cypress 
 - If the user specifies a category, use it.
 - If the project already has its own folder structure, follow it instead of KB defaults.
 
+### Read Implementation Before Writing
+- Before writing any test, read the source code of the feature being tested.
+- Understand what events the component listens to, what third-party libraries it uses, how data flows from API to UI, and what classes/attributes control styles and states.
+- The implementation is the source of truth. Do not guess component behavior — derive it from the code.
+- If the implementation is unclear or uses an unfamiliar third-party library, ask the user.
+
 ### Selector Strategy
 - Add `data-cy` attributes to the application source code for elements the test needs.
 - Do not overwrite existing `data-cy` or `data-testid` attributes — reuse them.
@@ -84,7 +90,11 @@ If the user asks for multiple tests:
 - Do not write tests without showing the code to the user first (unless they opt out).
 - Do not modify application code beyond adding `data-cy` attributes.
 - Do not use brittle selectors (tag chains, dynamic classes, text content as primary selector).
+- Do not use positional selectors (`.eq()`, `.first()`, `.last()`) — they depend on DOM order, which is unreliable.
 - Do not use `cy.wait(ms)` — always use intercept-based waiting.
+- Do not hardcode expected values against live/unstubbed API responses — spy and capture, or stub with fixtures.
+- Do not use `getComputedStyle()` to find elements or assert styles — assert on CSS classes or data attributes instead.
+- Do not guess how third-party components (MUI, Ant Design, etc.) work — read the implementation code or ask the user.
 - Do not create tests that depend on other tests' state.
 - Do not guess feature details — ask the user when unclear.
 - Do not read KB sections outside your mapping.

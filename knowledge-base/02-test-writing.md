@@ -419,18 +419,32 @@ When choosing a selector for an element, follow this priority order:
 - **Tag chains:** `div > ul > li:nth-child(3)` — breaks on any DOM change
 - **Dynamic/generated classes:** CSS module hashes, Tailwind JIT classes, styled-component classes
 - **Text content:** `cy.contains('Submit')` as primary selector — breaks with i18n or copy changes (acceptable only as a secondary assertion, not for element targeting)
+- **Positional selectors:** `.eq(index)`, `.first()`, `.last()` — these depend on DOM order, which changes with layout updates, async rendering, or different data. If you need a specific element among siblings, use a `data-cy` attribute to identify it directly
 - **XPath:** not supported natively in Cypress, do not use
 
-### 6.3: Adding `data-cy` Attributes to Application Code
+### 6.3: Read the Implementation Before Writing Tests
 
-When the agent writes tests for a feature, it must also add `data-cy` attributes to the application source code for elements it needs to interact with.
+Before writing any test, the agent must read the source code of the feature being tested (use project structure from Section 2 to locate the file). This is the source of truth — do not guess how a component behaves.
+
+**Read the implementation to understand:**
+
+1. **What events the component listens to** — e.g., `onClick`, `onMouseOver`, `onChange`, `onSubmit`. Use the exact event the component expects in the test (e.g., if the component uses `onMouseOver`, trigger `mouseover` in the test — not `mouseenter`).
+2. **What third-party libraries/components are used** — e.g., MUI, Ant Design, React Select. This determines how to interact with complex widgets (date pickers, dropdowns, tooltips, modals).
+3. **How data flows** — what API response fields are mapped to which UI elements. This tells you what to stub in fixtures and what the UI should display.
+4. **What CSS classes or conditional rendering logic controls visibility, styles, and states** — so you can assert on classes or attributes instead of computed styles.
+5. **All elements the test will interact with** — buttons, inputs, links, containers, error messages, etc. — for adding `data-cy` attributes.
+
+If the implementation is unclear or uses a pattern you don't understand, **ask the user**. Do not guess.
+
+### 6.3.1: Adding `data-cy` Attributes to Application Code
+
+After reading the implementation, add `data-cy` attributes to the application source code for elements the test needs.
 
 **Process:**
 
-1. Read the component/page source code for the feature being tested (use project structure from Section 2 to locate the file)
-2. Identify all elements the test will interact with — buttons, inputs, links, containers, error messages, etc.
-3. Add `data-cy` attributes directly to those elements in the application source code
-4. Use the added `data-cy` attributes in the test file
+1. From the implementation read in 6.3, identify all elements the test will interact with
+2. Add `data-cy` attributes directly to those elements in the application source code
+3. Use the added `data-cy` attributes in the test file
 
 **Rules for adding `data-cy` attributes:**
 
@@ -963,6 +977,72 @@ it('shows the user list', () => {
 ```
 
 **Rule:** One test, one concern. Intercept only what the test needs to verify. Let other APIs resolve on their own.
+
+### 9.12: Hardcoded Values Against Live API Responses
+
+**Wrong:**
+```typescript
+// API is NOT stubbed — real data comes back
+cy.intercept('GET', '/api/kpis').as('getKpis')
+cy.visit('/dashboard')
+cy.wait('@getKpis')
+
+// Hardcoded value that assumes specific live data
+cy.get('[data-cy="kpi-value"]').should('have.text', '42.5')
+```
+
+**Why it's bad:** Live API data changes independently of code — new records, recalculations, different date ranges. The test passes today and fails tomorrow even though the code is perfectly fine.
+
+**Instead — spy on the real API, capture the response, assert the UI reflects it:**
+```typescript
+cy.intercept('GET', '/api/kpis').as('getKpis')
+cy.visit('/dashboard')
+
+cy.wait('@getKpis').then((interception) => {
+  const value = interception.response.body.data.energy
+  cy.get('[data-cy="kpi-value"]').should('contain.text', String(value))
+})
+```
+
+**When to stub instead:** Use stubs (fixtures) when testing error states, empty states, edge case data, or when the API is unreliable/slow in the test environment.
+
+**Rule:** Default to spy + capture + assert. Use stubs for controlled scenarios. Never hardcode expected values against a live unstubbed API.
+
+### 9.13: Computed Style Assertions
+
+**Wrong:**
+```typescript
+cy.get('p').filter((index, el) => {
+  const style = window.getComputedStyle(el)
+  return style.fontWeight === '700' && style.fontSize === '28px'
+})
+```
+
+**Why it's bad:** Computed style values vary across browsers (`'700'` vs `'bold'`), operating systems, DPI/zoom levels, and CI environments. Tests pass locally but fail in CI — or vice versa.
+
+**Instead:** Assert on CSS classes, data attributes, or semantic properties that the component applies:
+```typescript
+// Assert on the class the component uses
+cy.get('[data-cy="kpi-title"]').should('have.class', 'kpi-title--bold')
+
+// Or use Cypress have.css only for truly stable properties
+cy.get('[data-cy="kpi-title"]').should('have.css', 'font-weight', '700')
+```
+
+**Rule:** Never use `getComputedStyle()` to find or filter elements. Read the implementation (Section 6.3) to understand what classes or attributes control styles, and assert on those instead.
+
+### 9.14: Guessing Third-Party Component Behavior
+
+**Wrong:** The agent does not know how a date picker, tooltip, or dropdown works, but writes test interaction code anyway — guessing DOM events, internal class names, or multi-step sequences.
+
+**Why it's bad:** Third-party components (MUI, Ant Design, React Select, etc.) have specific interaction contracts — which events they listen to, how their internal DOM is structured, what animations or transitions they use. Guessing leads to tests that work accidentally in one environment and fail in another.
+
+**Instead:**
+1. **Read the implementation** (Section 6.3) — check which third-party library is used and how the component is configured
+2. **Derive the interaction from the code** — if the component has `onMouseOver`, use `trigger('mouseover')`. If it uses Ant Design's `DatePicker`, understand its DOM structure from the import
+3. **If still unclear, ask the user** — "The component uses `<library>` for `<widget>`. How should the test interact with it?"
+
+**Rule:** Never guess how a third-party component works. Read the code first. Ask the user if the code doesn't make it clear.
 
 Only proceed to Section 10 when anti-patterns are understood.
 
