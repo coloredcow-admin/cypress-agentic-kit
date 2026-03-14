@@ -208,7 +208,7 @@ export default defineConfig({
 });
 ```
 
-Note: `baseUrl` should be updated by the user to match their project's dev server URL.
+Note: `baseUrl` is set to `http://localhost:3000` as a default. The user must update this in `cypress.config.ts` to match their actual dev server URL. For running tests against other environments (UAT, production), use: `npx cypress run --config baseUrl=https://your-environment-url.com`
 
 ### 9.2 Create support file
 
@@ -293,6 +293,12 @@ Validation:       PASS / FAIL / PASS (via GUI)
 ----------------------------------------
 Notes:            <any relevant notes>
 Overall Status:   SUCCESS / PARTIAL / FAILED
+========================================
+
+Action Required:
+→ Update `baseUrl` in cypress.config.ts to your dev server URL.
+→ To run tests against other environments:
+  npx cypress run --config baseUrl=https://your-uat-url.com
 ========================================
 ```
 

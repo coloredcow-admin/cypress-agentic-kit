@@ -89,9 +89,8 @@ Generate structured manual test cases for any feature — before or during devel
 |-------|------|--------|
 | Phase 1 | Cypress setup automation | Done |
 | Phase 2 | Test writing standards KB + test writer agent | Done |
-| Phase 3 | Manual test case generator agent | Planned |
-| Phase 4 | Project config KB (base URL, auth, environments) | Planned |
-| Phase 5 | CI integration KB + CI agent | Planned |
+| Phase 3 | Manual test case generator agent | Done |
+| Phase 4 | CI integration KB + CI agent | Planned |
 
 ## Design Principles
 
