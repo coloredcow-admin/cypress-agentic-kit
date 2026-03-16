@@ -15,9 +15,9 @@ Please do the following:
    https://github.com/abhilashabattu97/cypress-agentic-kit
 
 2. Add the kit files into this project. **Merge, do not replace:**
-   - If `knowledge-base/` already exists (from an existing agentic system or prior setup), only add the kit's specific files (`00-master.md`, `01-setup-run.md`, `02-test-writing.md`, `03-manual-test-cases.md`) into it. Do not overwrite or remove any existing files in the directory.
+   - If `knowledge-base/` already exists (from an existing agentic system or prior setup), only add the kit's specific files (`00-master.md`, `01-setup-run.md`, `02-test-writing.md`, `03-manual-test-cases.md`, `04-ci-integration.md`) into it. Do not overwrite or remove any existing files in the directory.
    - If `knowledge-base/` does not exist, create it and copy all kit KB files into it.
-   - Same for `agents/` — only add the kit's agent files (`cypress-setup-agent.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`). Do not overwrite or remove existing agent files.
+   - Same for `agents/` — only add the kit's agent files (`cypress-setup-agent.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`, `cypress-ci-agent.md`). Do not overwrite or remove existing agent files.
    - If any of the kit's specific files already exist in the project (e.g., from a previous install), skip them. To update existing files, use `prompts/sync.md` instead.
 
 3. Check if a `CLAUDE.md` file exists in the project root:

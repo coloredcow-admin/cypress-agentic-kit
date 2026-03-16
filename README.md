@@ -43,15 +43,18 @@ cypress-agentic-kit/
 │   ├── 00-master.md                   # Index — lists all sections + agent mappings
 │   ├── 01-setup-run.md               # Setup runbook (11 steps)
 │   ├── 02-test-writing.md            # Test writing standards (10 sections)
-│   └── 03-manual-test-cases.md       # Manual test case generation (6 sections)
+│   ├── 03-manual-test-cases.md       # Manual test case generation (6 sections)
+│   └── 04-ci-integration.md          # CI workflow setup (3 sections)
 ├── agents/
 │   ├── cypress-setup-agent.md         # Setup agent prompt
 │   ├── cypress-test-writer-agent.md   # Test writer agent prompt
-│   └── manual-test-generator-agent.md # Manual test case generator agent prompt
+│   ├── manual-test-generator-agent.md # Manual test case generator agent prompt
+│   └── cypress-ci-agent.md            # CI setup agent prompt
 └── prompts/
     ├── bootstrap.md                   # One prompt to install everything
     ├── test-writer.md                 # One prompt to start writing tests
     ├── manual-test-generator.md       # One prompt to generate manual test cases
+    ├── ci-setup.md                    # One prompt to set up CI workflow
     └── sync.md                        # One prompt to update kit files
 ```
 
@@ -82,6 +85,16 @@ Generate structured manual test cases for any feature — before or during devel
 2. The agent asks you for the feature name and description.
 3. It generates test cases across 4 categories: Functional, UI, Interdependency, and Edge Cases.
 4. Review and share with your QA team. Later, use the test writer agent to automate selected cases.
+
+## Setting Up CI
+
+Set up a CI workflow that runs Cypress tests when a pull request is labeled:
+
+1. Paste the prompt from [`prompts/ci-setup.md`](prompts/ci-setup.md) into your Claude session.
+2. The agent detects your CI platform, package manager, and dev server.
+3. It creates a workflow file triggered by the `ready-to-test` label on PRs.
+4. When you add the label to a PR, Cypress runs automatically in CI.
+5. Screenshots and videos are uploaded as artifacts on failure.
 
 ## What's Coming Next
 
