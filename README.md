@@ -111,5 +111,4 @@ Set up a CI workflow that runs Cypress tests when a pull request is labeled:
 - **One prompt installs everything** — no manual file creation
 - **Agents read only what they need** — minimal token usage, no hallucination from context overload
 - **Idempotent** — safe to run multiple times, skips what's already done
-- **Works without the KB** — if knowledge base is missing, agents degrade gracefully
 - **User prompt always wins** — KB is supplementary context, never an override
