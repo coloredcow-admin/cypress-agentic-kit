@@ -6,19 +6,19 @@ This is the entry point for all agents. Read this file first to determine which 
 
 | Section | File | Description |
 |---------|------|-------------|
-| Setup & Run | `01-setup-run.md` | Install Node (if missing), install Cypress, scaffold config, verify setup |
 | Test Writing Standards | `02-test-writing.md` | Project structure detection, test categorization, writing standards, selector strategy, command patterns, anti-patterns |
 | Manual Test Cases | `03-manual-test-cases.md` | Manual test case generation — format, categories, writing rules, automation-readiness, output behavior |
-| CI Integration | `04-ci-integration.md` | CI workflow setup — label-triggered Cypress runs on PRs, artifact uploads, final report |
+
+> **Note:** Setup (`01-setup-run.md`) and CI (`04-ci-integration.md`) knowledge base files are available in the kit repo only. They are one-time use and not copied to the project.
 
 ## Agent-to-Section Mapping
 
 | Agent | Sections |
 |-------|----------|
-| `cypress-setup-agent` | `01-setup-run.md` |
 | `cypress-test-writer-agent` | `02-test-writing.md` |
 | `manual-test-generator-agent` | `03-manual-test-cases.md` |
-| `cypress-ci-agent` | `04-ci-integration.md` |
+
+> **Note:** `cypress-setup-agent` and `cypress-ci-agent` run directly from the kit repo and are not installed in the project.
 
 ## Rules
 

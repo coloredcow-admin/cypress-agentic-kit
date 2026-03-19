@@ -40,24 +40,26 @@ cypress-agentic-kit/
 ├── CLAUDE.md                          # Kit-internal rules (not copied to host projects)
 ├── README.md                          # This file
 ├── knowledge-base/
-│   ├── 00-master.md                   # Index — lists all sections + agent mappings
-│   ├── 01-setup-run.md               # Setup runbook (11 steps)
-│   ├── 02-test-writing.md            # Test writing standards (10 sections)
-│   ├── 03-manual-test-cases.md       # Manual test case generation (6 sections)
-│   └── 04-ci-integration.md          # CI workflow setup (3 sections)
+│   ├── 00-master.md                   # Index — lists all sections + agent mappings        ← copied to project
+│   ├── 01-setup-run.md               # Setup runbook (11 steps)                           ← stays in repo (one-time)
+│   ├── 02-test-writing.md            # Test writing standards (10 sections)               ← copied to project
+│   ├── 03-manual-test-cases.md       # Manual test case generation (6 sections)           ← copied to project
+│   └── 04-ci-integration.md          # CI workflow setup (3 sections)                     ← stays in repo (one-time)
 ├── agents/
-│   ├── CLAUDE.md                      # Agent rules — installed in host projects
-│   ├── cypress-setup-agent.md         # Setup agent prompt
-│   ├── cypress-test-writer-agent.md   # Test writer agent prompt
-│   ├── manual-test-generator-agent.md # Manual test case generator agent prompt
-│   └── cypress-ci-agent.md            # CI setup agent prompt
+│   ├── CLAUDE.md                      # Agent rules — installed in host projects           ← copied to project
+│   ├── cypress-setup-agent.md         # Setup agent prompt                                ← stays in repo (one-time)
+│   ├── cypress-test-writer-agent.md   # Test writer agent prompt                          ← copied to project
+│   ├── manual-test-generator-agent.md # Manual test case generator agent prompt           ← copied to project
+│   └── cypress-ci-agent.md            # CI setup agent prompt                             ← stays in repo (one-time)
 └── prompts/
-    ├── bootstrap.md                   # One prompt to install everything
-    ├── test-writer.md                 # One prompt to start writing tests
-    ├── manual-test-generator.md       # One prompt to generate manual test cases
-    ├── ci-setup.md                    # One prompt to set up CI workflow
-    └── sync.md                        # One prompt to update kit files
+    ├── bootstrap.md                   # One prompt to install everything                  ← stays in repo (one-time)
+    ├── test-writer.md                 # One prompt to start writing tests                 ← copied to project
+    ├── manual-test-generator.md       # One prompt to generate manual test cases          ← copied to project
+    ├── ci-setup.md                    # One prompt to set up CI workflow                  ← stays in repo (one-time)
+    └── sync.md                        # One prompt to update kit files                    ← stays in repo (use from repo)
 ```
+
+**8 files** are copied to your project (ongoing use). **7 files** stay in the kit repo (one-time setup, CI, and sync).
 
 ## Works With Any Project
 
@@ -76,7 +78,7 @@ After Cypress is set up, use the test writer agent to generate tests:
 3. Tell it what feature or flow you want to test.
 4. It writes the test, adds `data-cy` selectors to your app code, and gives you a summary.
 
-Already have the kit installed from an earlier version? Run [`prompts/sync.md`](prompts/sync.md) first to pull the latest files.
+Already have the kit installed from an earlier version? Run the sync prompt from the kit repo ([`prompts/sync.md`](prompts/sync.md)) to pull the latest files.
 
 ## Generating Manual Test Cases
 
@@ -104,7 +106,7 @@ Set up a CI workflow that runs Cypress tests when a pull request is labeled:
 | Phase 1 | Cypress setup automation | Done |
 | Phase 2 | Test writing standards KB + test writer agent | Done |
 | Phase 3 | Manual test case generator agent | Done |
-| Phase 4 | CI integration KB + CI agent | Planned |
+| Phase 4 | CI integration KB + CI agent | Done |
 
 ## Design Principles
 

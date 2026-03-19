@@ -12,10 +12,10 @@
 
 | Agent                    | Sections to Load         |
 |--------------------------|--------------------------|
-| cypress-setup-agent      | `01-setup-run.md`        |
 | cypress-test-writer-agent | `02-test-writing.md`     |
 | manual-test-generator-agent | `03-manual-test-cases.md` |
-| cypress-ci-agent           | `04-ci-integration.md`   |
+
+> **Note:** `cypress-setup-agent` (`01-setup-run.md`) and `cypress-ci-agent` (`04-ci-integration.md`) run directly from the kit repo and are not installed in the project.
 
 ## Execution Rules
 

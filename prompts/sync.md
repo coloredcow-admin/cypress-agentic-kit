@@ -16,10 +16,10 @@ Please do the following:
 1. Fetch the latest files from the repository:
    https://github.com/abhilashabattu97/cypress-agentic-kit
 
-2. Update only the Cypress Agentic Kit files in this project. **Only touch kit-specific files, leave everything else untouched:**
-   - `knowledge-base/` — only add or update kit files (`00-master.md`, `01-setup-run.md`, `02-test-writing.md`, `03-manual-test-cases.md`, `04-ci-integration.md`). Do not touch any other files in this directory (they may belong to the project's own agentic system or other tools). Do not overwrite kit files that have local modifications — if the file exists and has been customized, skip it.
-   - `agents/` — only add or update kit agent files (`cypress-setup-agent.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`, `cypress-ci-agent.md`). Do not touch any other agent files in this directory.
-   - `prompts/` — only add or update kit prompt files (`bootstrap.md`, `test-writer.md`, `manual-test-generator.md`, `ci-setup.md`, `sync.md`). Do not touch any other prompt files.
+2. Update only the **ongoing-use** Cypress Agentic Kit files in this project. Setup and CI files are not part of the project — they stay in the kit repo. **Only touch kit-specific files, leave everything else untouched:**
+   - `knowledge-base/` — only add or update `00-master.md`, `02-test-writing.md`, `03-manual-test-cases.md`. Do NOT add `01-setup-run.md` or `04-ci-integration.md` (these stay in the kit repo). Do not touch any other files in this directory. Do not overwrite kit files that have local modifications — if the file exists and has been customized, skip it.
+   - `agents/` — only add or update `CLAUDE.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`. Do NOT add `cypress-setup-agent.md` or `cypress-ci-agent.md` (these stay in the kit repo). Do not touch any other agent files in this directory.
+   - `prompts/` — only add or update `test-writer.md`, `manual-test-generator.md`. Do NOT add `bootstrap.md`, `ci-setup.md`, or `sync.md` (these stay in the kit repo). Do not touch any other prompt files.
 
 3. Update `knowledge-base/00-master.md`:
    - Add any new Cypress kit section entries that don't already exist.
@@ -44,16 +44,17 @@ Important:
 
 ## What Happens When You Run This
 
-1. New knowledge base sections are added (e.g., `02-test-writing.md`).
-2. New agent prompts are added (e.g., `cypress-test-writer-agent.md`).
-3. New bootstrap/invocation prompts are added (e.g., `test-writer.md`).
+1. Ongoing-use knowledge base files are added or updated (`02-test-writing.md`, `03-manual-test-cases.md`).
+2. Ongoing-use agent files are added or updated (`cypress-test-writer-agent.md`, `manual-test-generator-agent.md`).
+3. Ongoing-use prompt files are added or updated (`test-writer.md`, `manual-test-generator.md`).
 4. Index file (`00-master.md`) is updated with new mappings. Agent rules in `agents/CLAUDE.md` are synced.
 5. No agent is executed — this is a file sync only.
+6. Setup and CI files are NOT synced — they stay in the kit repo for one-time use.
 
 ## After Syncing
 
 Run the relevant agent prompt to use the new capabilities:
-- Test writer: paste the prompt from `prompts/test-writer.md`
-- Manual test cases: paste the prompt from `prompts/manual-test-generator.md`
-- CI setup: paste the prompt from `prompts/ci-setup.md`
-- Setup (if not done): paste the prompt from `prompts/bootstrap.md`
+- Test writer: paste the prompt from `prompts/test-writer.md` (in your project)
+- Manual test cases: paste the prompt from `prompts/manual-test-generator.md` (in your project)
+- CI setup: paste the prompt from `prompts/ci-setup.md` (in the kit repo)
+- Setup (if not done): paste the prompt from `prompts/bootstrap.md` (in the kit repo)

@@ -16,7 +16,7 @@ An AI-assisted testing toolkit. You paste prompts into Claude Code, and AI agent
 │                                                             │
 │  Step 1-3 │ BOOTSTRAP + CYPRESS SETUP                       │
 │           │ Cypress gets installed & configured             │
-│           │ Prompt: prompts/bootstrap.md                    │
+│           │ Prompt: prompts/bootstrap.md (from kit repo)    │
 │           │ Input: None — agent handles everything          │
 │           ↓                                                 │
 │  ┌──────────────────── TESTING ────────────────────────┐    │
@@ -24,12 +24,14 @@ An AI-assisted testing toolkit. You paste prompts into Claude Code, and AI agent
 │  │  Step 4a │ MANUAL TEST CASES                        │    │
 │  │          │ AI generates structured test case docs   │    │
 │  │          │ Prompt: manual-test-generator.md         │    │
+│  │          │   (in your project)                      │    │
 │  │          │ Input: Requirements doc / feature spec   │    │
 │  │          │        (agent will ask you for this)     │    │
 │  │          ↓                                          │    │
 │  │  Step 4b │ AUTOMATED TEST WRITING                   │    │
 │  │          │ AI writes Cypress E2E tests              │    │
 │  │          │ Prompt: test-writer.md                   │    │
+│  │          │   (in your project)                      │    │
 │  │          │ Input: Manual test cases from Step 4a    │    │
 │  │          │   + app source code (read by agent)      │    │
 │  │          │        (agent will ask which feature)    │    │
@@ -38,7 +40,7 @@ An AI-assisted testing toolkit. You paste prompts into Claude Code, and AI agent
 │           ↓                                                 │
 │  Step 5   │ CI SETUP                                        │
 │           │ CI pipeline gets created                        │
-│           │ Prompt: prompts/ci-setup.md                     │
+│           │ Prompt: prompts/ci-setup.md (from kit repo)     │
 │           │ Input: None — auto-detects your CI platform     │
 │           ↓                                                 │
 │  Step 6   │ RUN IN CI                                       │
@@ -47,7 +49,7 @@ An AI-assisted testing toolkit. You paste prompts into Claude Code, and AI agent
 │                                                             │
 │  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
 │  SYNC     │ Update kit to latest version anytime            │
-│           │ Prompt: prompts/sync.md                         │
+│           │ Prompt: prompts/sync.md (from kit repo)         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -57,27 +59,27 @@ An AI-assisted testing toolkit. You paste prompts into Claude Code, and AI agent
 
 #### Steps 1–3: Bootstrap + Cypress Setup (One-Time)
 
-> **Prompt:** `prompts/bootstrap.md` · **Input:** None
+> **Prompt:** `prompts/bootstrap.md` *(from kit repo)* · **Input:** None
 
-Paste the prompt. The agent installs kit files into your project, detects your environment, installs Cypress, scaffolds the folder structure, and verifies everything works.
+Paste the prompt from the kit repo. The agent copies only the ongoing-use files (test writing + manual test cases) into your project, detects your environment, installs Cypress, scaffolds the folder structure, and verifies everything works. Setup files stay in the kit repo.
 
 #### Step 4a: Manual Test Case Generation
 
-> **Prompt:** `prompts/manual-test-generator.md` · **Input:** Requirements doc / feature spec *(agent will ask you)*
+> **Prompt:** `prompts/manual-test-generator.md` *(in your project)* · **Input:** Requirements doc / feature spec *(agent will ask you)*
 
 Paste the prompt. The agent asks you for your feature's requirements or acceptance criteria. It then generates a structured test case document covering Functional, UI, Interdependency, and Edge Case scenarios — saved to `test-cases/`.
 
 #### Step 4b: Automated Cypress Test Writing
 
-> **Prompt:** `prompts/test-writer.md` · **Input:** Manual test cases + source code *(agent will ask which feature)*
+> **Prompt:** `prompts/test-writer.md` *(in your project)* · **Input:** Manual test cases + source code *(agent will ask which feature)*
 
 Paste the prompt. The agent asks which feature to test, picks up the manual test cases from Step 4a, reads your project's source code to understand components and selectors, and writes Cypress E2E tests. It shows you the code before creating any file.
 
 #### Step 5: CI Setup
 
-> **Prompt:** `prompts/ci-setup.md` · **Input:** None
+> **Prompt:** `prompts/ci-setup.md` *(from kit repo)* · **Input:** None
 
-Paste the prompt. The agent auto-detects your CI platform, creates a workflow file, and sets up a `ready-to-test` label.
+Paste the prompt from the kit repo. The agent auto-detects your CI platform, creates a workflow file, and sets up a `ready-to-test` label. CI files stay in the kit repo since this is a one-time operation.
 
 #### Step 6: Run in CI
 
@@ -85,9 +87,9 @@ Paste the prompt. The agent auto-detects your CI platform, creates a workflow fi
 
 #### Sync: Keep the Kit Updated
 
-> **Prompt:** `prompts/sync.md` · **Input:** None
+> **Prompt:** `prompts/sync.md` *(from kit repo)* · **Input:** None
 
-Paste this prompt whenever the kit gets a new update. The agent pulls the latest `knowledge-base/`, `agents/`, and `prompts/` files from the repository into your project — so you always have the latest agent improvements, rules, and bug fixes. **Your project code, Cypress tests, test cases, and CI config are never touched** — only kit files get updated.
+Paste this prompt from the kit repo whenever the kit gets a new update. The agent pulls the latest ongoing-use files (`knowledge-base/`, `agents/`, `prompts/`) from the repository into your project — so you always have the latest agent improvements, rules, and bug fixes. **Your project code, Cypress tests, test cases, and CI config are never touched** — only kit files get updated.
 
 ---
 
@@ -95,12 +97,12 @@ Paste this prompt whenever the kit gets a new update. The agent pulls the latest
 
 | Step | Paste This Prompt | What Happens |
 |------|-------------------|--------------|
-| 1–3 | `bootstrap.md` | Cypress installed & configured |
-| 4a | `manual-test-generator.md` | Agent asks for requirements → generates test cases |
-| 4b | `test-writer.md` | Agent asks which feature → writes Cypress tests |
-| 5 | `ci-setup.md` | Auto-detects everything → creates CI pipeline |
+| 1–3 | `bootstrap.md` *(kit repo)* | Cypress installed & configured |
+| 4a | `manual-test-generator.md` *(in project)* | Agent asks for requirements → generates test cases |
+| 4b | `test-writer.md` *(in project)* | Agent asks which feature → writes Cypress tests |
+| 5 | `ci-setup.md` *(kit repo)* | Auto-detects everything → creates CI pipeline |
 | 6 | — | Add `ready-to-test` label → tests run in CI |
-| Sync | `sync.md` | Updates kit files → your code stays untouched |
+| Sync | `sync.md` *(kit repo)* | Updates kit files → your code stays untouched |
 
 ### Good to Know
 
