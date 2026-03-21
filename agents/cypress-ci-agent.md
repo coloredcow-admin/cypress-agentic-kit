@@ -19,17 +19,26 @@ Your job is to set up a CI workflow that runs Cypress tests on a pull request wh
 - Detect the CI platform from existing configuration files.
 - Check for existing Cypress workflows to avoid duplicates.
 
+### Detect Cypress Location
+- Check if `cypress.config.ts` or `cypress.config.js` exists at the **project root**.
+- If not found at root, search subdirectories (one level deep): `find . -maxdepth 2 -name "cypress.config.*" -not -path "*/node_modules/*"`
+- The directory where `cypress.config` lives is the **Cypress root**. All Cypress-related files (lockfile, tests, screenshots) are relative to it.
+- If Cypress is in a subdirectory → the workflow needs `working-directory` and `install: false` on the Cypress action step.
+
 ### Project-Aware Configuration
-- Detect the package manager from lockfiles (same logic as setup agent).
-- Read `cypress.config.ts` to get the `baseUrl` for the `wait-on` URL.
-- Read `package.json` scripts to determine the correct dev server start command.
-- Read `.nvmrc` or `.node-version` for the Node.js version.
+- Detect the package manager from lockfiles **inside the Cypress root** (not always project root).
+- Read `cypress.config.ts` (or `.js`) **inside the Cypress root** to get the `baseUrl` for the `wait-on` URL.
+- Read the **project root** `package.json` scripts to determine the dev server start command.
+- If no dev server script is found in `package.json` (`start`, `dev`, `serve`), this is likely a non-Node project — ask the user: "How do you start your application locally?" and "What dependencies need to be installed for the app in CI?"
+- Read `.nvmrc` or `.node-version` at the project root for the Node.js version.
 - If any value is ambiguous or uses a default placeholder, ask the user to confirm.
 
 ### Workflow Creation
-- Create the workflow file as defined in Section 2 of the KB.
+- The workflow template in Section 2 of the KB is a **reference with placeholders** — do NOT copy it as-is. Replace every `<placeholder>` with values detected from the project.
+- If Cypress is in a subdirectory, set `working-directory` on install and Cypress steps, `install: false` on the Cypress action, and prefix the screenshot artifact path.
+- For non-Node projects, add app setup steps (language runtime, dependencies, start command) before the Cypress step. Omit the `start` field from cypress-io/github-action since the app is started in a prior step.
 - Adapt the workflow for the detected package manager (npm, yarn, pnpm).
-- Include artifact uploads for screenshots and videos.
+- Include artifact uploads for screenshots on failure.
 - Ensure the workflow triggers only on the `ready-to-test` label.
 
 ### Label Setup

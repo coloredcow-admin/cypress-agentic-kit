@@ -16,17 +16,35 @@ npx cypress --version
 
 - If Cypress is not installed → stop. Direct the user to run the setup agent first (`prompts/bootstrap.md`).
 
-### 1.2 Tests exist
+### 1.2 Detect Cypress location
 
-Check that at least one test file exists:
+Determine where `cypress.config.ts` (or `.js`) lives — this decides whether the workflow needs a `working-directory`.
+
+1. Check the **project root** for `cypress.config.ts` or `cypress.config.js`.
+2. If not found at root → search subdirectories (one level deep):
+   ```bash
+   find . -maxdepth 2 -name "cypress.config.*" -not -path "*/node_modules/*"
+   ```
+3. If found in a subdirectory (e.g., `cypress-tests/`) → that directory is the **Cypress root**. All Cypress-related paths (lockfile, config, tests, screenshots) are relative to it, and the workflow must use `working-directory`.
+
+| `cypress.config` location | Cypress root | `working-directory` |
+|---|---|---|
+| `./cypress.config.ts` | Project root | Not needed |
+| `./cypress-tests/cypress.config.ts` | `cypress-tests/` | `cypress-tests` |
+
+If `cypress.config` is not found anywhere → stop. Direct the user to run the setup agent first (`prompts/bootstrap.md`).
+
+### 1.3 Tests exist
+
+Check that at least one test file exists inside the **Cypress root**:
 
 ```
-cypress/e2e/**/*.cy.{js,ts}
+<cypress-root>/cypress/e2e/**/*.cy.{js,ts}
 ```
 
 - If no test files exist → stop. Direct the user to write tests first (`prompts/test-writer.md`).
 
-### 1.3 Detect CI platform
+### 1.4 Detect CI platform
 
 Check the project root for existing CI configuration:
 
@@ -45,7 +63,7 @@ Check the project root for existing CI configuration:
 
 **This runbook provides workflow templates for GitHub Actions.** For other platforms, adapt the workflow structure accordingly.
 
-### 1.4 Check for existing Cypress workflow
+### 1.5 Check for existing Cypress workflow
 
 If a CI workflow file already exists that runs Cypress (e.g., `.github/workflows/cypress.yml`):
 
@@ -64,6 +82,8 @@ The workflow triggers when a specific label is added to a pull request. The labe
 **Why label-based?** Not every PR push should trigger a full Cypress run. The developer decides when the PR is ready for testing by adding the label. This avoids wasting CI minutes on work-in-progress PRs.
 
 ### 2.2 GitHub Actions workflow
+
+> **IMPORTANT:** The template below is a **reference structure**, not a copy-paste workflow. Every `<placeholder>` must be replaced with values detected from the project. Do not use the template as-is — always resolve all placeholders first using the detection rules in Section 2.3.
 
 Create the file `.github/workflows/cypress.yml`:
 
@@ -86,22 +106,30 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: <node-version>
+
+      # --- Include this section ONLY for non-Node projects (Section 2.4) ---
+      # <app-setup-steps>
 
       - name: Cache Cypress binary
         uses: actions/cache@v4
         with:
           path: ~/.cache/Cypress
-          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: cypress-${{ runner.os }}-${{ hashFiles('<lockfile-path>') }}
 
       - name: Install dependencies
-        run: npm ci
+        # Include 'working-directory' ONLY if Cypress is in a subdirectory
+        # working-directory: <cypress-root>
+        run: <install-command>
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          start: npm start
-          wait-on: 'http://localhost:3000'
+          # Include these two ONLY if Cypress is in a subdirectory
+          # install: false
+          # working-directory: <cypress-root>
+          start: <dev-server-start-command>
+          wait-on: '<base-url>'
           wait-on-timeout: 120
 
       - name: Upload screenshots on failure
@@ -109,23 +137,30 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshots
-          path: cypress/screenshots/
+          path: <cypress-root>/cypress/screenshots/
           retention-days: 7
 ```
+
+> **Subdirectory setup:** When Cypress lives in a subdirectory (e.g., `cypress-tests/`), uncomment the `working-directory` and `install: false` lines and replace `<cypress-root>` with the subdirectory name. The `install: false` is needed because dependencies are already installed in the separate "Install dependencies" step with `working-directory`.
 
 ### 2.3 Workflow configuration notes
 
 The agent must adapt the workflow based on the project:
 
-| Setting | How to determine |
-|---------|-----------------|
-| `node-version` | Read from `.nvmrc`, `.node-version`, or `package.json` engines field. Default: `18` |
-| `npm ci` vs `yarn install --frozen-lockfile` vs `pnpm install --frozen-lockfile` | Detect from lockfile (same logic as setup agent, Step 5 in `01-setup-run.md`) |
-| `npm start` | Read `package.json` scripts — use the dev server script (`start`, `dev`, `serve`). Ask the user if unclear |
-| `wait-on` URL | Use the `baseUrl` from `cypress.config.ts`. If it is still the default `http://localhost:3000`, ask the user to confirm |
+| Placeholder | How to determine |
+|-------------|-----------------|
+| `<node-version>` | Check project root for `.nvmrc` or `.node-version`. If not found, check `engines` field in `./package.json`. Default: `20` |
+| `<cypress-root>` | Detected in Pre-flight Section 1.2. If `cypress.config` is at project root → use `./` (omit `working-directory`). If in a subdirectory → use that directory name (e.g., `cypress-tests`) |
+| `<lockfile-path>` | Look inside `<cypress-root>` for: `package-lock.json` (npm), `yarn.lock` (yarn), `pnpm-lock.yaml` (pnpm). If `<cypress-root>` is a subdirectory, prefix the path (e.g., `cypress-tests/package-lock.json`) |
+| `<install-command>` | `npm ci` / `yarn install --frozen-lockfile` / `pnpm install --frozen-lockfile` — detect from lockfile found in `<cypress-root>` |
+| `<dev-server-start-command>` | Read the **project root** `package.json` scripts — use the dev server script (`start`, `dev`, `serve`). If no dev server script is found (common for non-Node projects like Python, Java, .NET), ask the user: "How do you start your application locally?" |
+| `<base-url>` | Read `baseUrl` from `<cypress-root>/cypress.config.ts` (or `.js`). If it is still the default `http://localhost:3000`, ask the user to confirm |
+| `<app-setup-steps>` | Only needed for non-Node projects. See Section 2.4 |
 | `wait-on-timeout` | Default `120` seconds. Increase if the user reports slow startup |
 
-### 2.4 Package manager variants
+### 2.4 Project-specific variants
+
+#### Package manager variants
 
 If the project uses **yarn**:
 
@@ -136,8 +171,8 @@ If the project uses **yarn**:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          start: yarn start
-          wait-on: 'http://localhost:3000'
+          start: yarn <dev-server-script>
+          wait-on: '<base-url>'
           wait-on-timeout: 120
 ```
 
@@ -155,10 +190,48 @@ If the project uses **pnpm**:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          start: pnpm start
-          wait-on: 'http://localhost:3000'
+          start: pnpm <dev-server-script>
+          wait-on: '<base-url>'
           wait-on-timeout: 120
 ```
+
+#### Non-Node project adjustments
+
+For projects where the main application is not Node-based (Python, Java, .NET, etc.), Cypress typically lives in a subdirectory (e.g., `cypress-tests/`). The workflow needs additional steps to set up and start the application.
+
+Replace `<app-setup-steps>` in the template with steps specific to the project's tech stack. Ask the user what commands are needed. Common examples:
+
+**Python:**
+```yaml
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '<python-version>'
+
+      - name: Install app dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start application
+        run: <python-start-command> &
+```
+
+**Java (Maven):**
+```yaml
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '<java-version>'
+
+      - name: Build and start application
+        run: <java-start-command> &
+```
+
+> **Key points for non-Node projects:**
+> - The app start command is NOT in any `package.json` — always ask the user.
+> - The `&` at the end runs the app in the background so the workflow can proceed to Cypress.
+> - The `start` field in cypress-io/github-action should be omitted — the app is already started in a prior step.
+> - `working-directory` and `install: false` are required on the Cypress action step.
 
 ### 2.5 Label creation
 
