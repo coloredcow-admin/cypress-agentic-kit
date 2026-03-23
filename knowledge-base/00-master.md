@@ -8,6 +8,7 @@ This is the entry point for all agents. Read this file first to determine which 
 |---------|------|-------------|
 | Test Writing Standards | `02-test-writing.md` | Project structure detection, test categorization, writing standards, selector strategy, command patterns, anti-patterns |
 | Manual Test Cases | `03-manual-test-cases.md` | Manual test case generation — format, categories, writing rules, automation-readiness, output behavior |
+| Scope & Coverage | `05-scope-rules.md` | Scope categorization rules, scope proposal format, coverage tracking and reporting |
 
 > **Note:** Setup (`01-setup-run.md`) and CI (`04-ci-integration.md`) knowledge base files are available in the kit repo only. They are one-time use and not copied to the project.
 
@@ -15,7 +16,7 @@ This is the entry point for all agents. Read this file first to determine which 
 
 | Agent | Sections |
 |-------|----------|
-| `cypress-test-writer-agent` | `02-test-writing.md` |
+| `cypress-test-writer-agent` | `02-test-writing.md`, `05-scope-rules.md` |
 | `manual-test-generator-agent` | `03-manual-test-cases.md` |
 
 > **Note:** `cypress-setup-agent` and `cypress-ci-agent` run directly from the kit repo and are not installed in the project.

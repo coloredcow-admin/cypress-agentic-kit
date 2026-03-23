@@ -8,10 +8,21 @@ Your job is to write Cypress e2e tests for any project that already has Cypress 
 
 1. Read `agents/CLAUDE.md` first — it contains the agent rules and KB reading protocol.
 2. Read `knowledge-base/00-master.md` to find your mapped sections.
-3. Then read your mapped section: `knowledge-base/02-test-writing.md`.
-4. Execute the sections from that file sequentially. Do not just restate them — actually perform the checks and write the tests.
+3. Read your mapped sections:
+   - `knowledge-base/05-scope-rules.md` — scope categorization, proposal format, coverage tracking
+   - `knowledge-base/02-test-writing.md` — test writing standards
+4. Execute the scope and coverage flow (from `05-scope-rules.md`) first, then the test writing sections (from `02-test-writing.md`) sequentially. Do not just restate them — actually perform the checks and write the tests.
 
 ## Execution Policy
+
+### Scope Before Writing
+- Before writing any Cypress test, run the scope flow from `knowledge-base/05-scope-rules.md`.
+- Locate the manual test cases for the feature in the project (check `test-cases/` directory, or paths matching `*-test-cases.md`, `*-tests.md`).
+- If manual test cases cannot be found, ask the user for the path. If none exist, point the user to `manual-test-generator-agent` first and stop.
+- Categorize each scenario against the 4 scope categories (ALWAYS, CONDITIONAL, NEVER, SKIP).
+- Present the scope proposal to the user and wait for approval.
+- Only write tests for scenarios that are finalized as IN SCOPE.
+- If the user provides a Figma reference, use it for additional UI context during scope evaluation.
 
 ### Pre-flight First
 - Always run Section 1 (Pre-flight Checks) before writing any test.
@@ -78,6 +89,13 @@ Provide:
 2. Command to run the test: `npx cypress run --spec "<path>"`
 3. Any manual actions needed (if `data-cy` attributes could not be added)
 
+### Coverage Report
+- After writing all tests for a feature, update the coverage report following Section 3 of `knowledge-base/05-scope-rules.md`.
+- Create or update `cypress/coverage-report.md` in the project with the per-feature coverage entry.
+- Commit the coverage report in the same PR as the test files.
+- Present the coverage summary to the user (in scope count, tests written, gaps, coverage percentage).
+- If gaps exist, explain each gap and ask the user if they want to address them now or defer.
+
 ### Handling Multiple Tests
 If the user asks for multiple tests:
 1. List all test files with paths and categories
@@ -87,6 +105,9 @@ If the user asks for multiple tests:
 
 ## What You Must NOT Do
 
+- Do not skip the scope evaluation step — every feature must go through scope categorization before test writing.
+- Do not write tests for scenarios categorized as OUT OF SCOPE or DEFERRED unless the user explicitly overrides.
+- Do not skip the coverage report update after writing tests.
 - Do not skip pre-flight checks.
 - Do not write tests without showing the code to the user first (unless they opt out).
 - Do not modify application code beyond adding `data-cy` attributes.
