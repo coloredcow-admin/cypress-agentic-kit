@@ -15,7 +15,7 @@ Please do the following:
    https://github.com/abhilashabattu97/cypress-agentic-kit
 
 2. Add only the **ongoing-use** kit files into this project. Setup and CI files stay in the kit repo — they are one-time use and should be referenced from the repo directly when needed. **Merge, do not replace:**
-   - `knowledge-base/` — only add `00-master.md`, `02-test-writing.md`, `03-manual-test-cases.md`, `05-scope-rules.md`. Do NOT copy `01-setup-run.md` or `04-ci-integration.md` (these stay in the kit repo). Do not overwrite or remove any existing files in the directory.
+   - `knowledge-base/` — only add `00-master.md`, `02-test-writing.md`, `03-manual-test-cases.md`. Do NOT copy `01-setup-run.md` or `04-ci-integration.md` (these stay in the kit repo). Do not overwrite or remove any existing files in the directory.
    - If `knowledge-base/` does not exist, create it and copy the above KB files into it.
    - `agents/` — only add `CLAUDE.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`. Do NOT copy `cypress-setup-agent.md` or `cypress-ci-agent.md` (these stay in the kit repo). Do not overwrite or remove existing agent files.
    - `prompts/` — only add `test-writer.md`, `manual-test-generator.md`. Do NOT copy `bootstrap.md`, `ci-setup.md`, or `sync.md` (these stay in the kit repo). Do not overwrite or remove existing prompt files.

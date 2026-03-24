@@ -17,7 +17,7 @@ Please do the following:
    https://github.com/abhilashabattu97/cypress-agentic-kit
 
 2. Update only the **ongoing-use** Cypress Agentic Kit files in this project. Setup and CI files are not part of the project — they stay in the kit repo. **Only touch kit-specific files, leave everything else untouched:**
-   - `knowledge-base/` — only add or update `00-master.md`, `02-test-writing.md`, `03-manual-test-cases.md`, `05-scope-rules.md`. Do NOT add `01-setup-run.md` or `04-ci-integration.md` (these stay in the kit repo). Do not touch any other files in this directory. Do not overwrite kit files that have local modifications — if the file exists and has been customized, skip it.
+   - `knowledge-base/` — only add or update `00-master.md`, `02-test-writing.md`, `03-manual-test-cases.md`. Do NOT add `01-setup-run.md` or `04-ci-integration.md` (these stay in the kit repo). Do not touch any other files in this directory. Do not overwrite kit files that have local modifications — if the file exists and has been customized, skip it.
    - `agents/` — only add or update `CLAUDE.md`, `cypress-test-writer-agent.md`, `manual-test-generator-agent.md`. Do NOT add `cypress-setup-agent.md` or `cypress-ci-agent.md` (these stay in the kit repo). Do not touch any other agent files in this directory.
    - `prompts/` — only add or update `test-writer.md`, `manual-test-generator.md`. Do NOT add `bootstrap.md`, `ci-setup.md`, or `sync.md` (these stay in the kit repo). Do not touch any other prompt files.
 
@@ -44,7 +44,7 @@ Important:
 
 ## What Happens When You Run This
 
-1. Ongoing-use knowledge base files are added or updated (`02-test-writing.md`, `03-manual-test-cases.md`, `05-scope-rules.md`).
+1. Ongoing-use knowledge base files are added or updated (`02-test-writing.md`, `03-manual-test-cases.md`).
 2. Ongoing-use agent files are added or updated (`cypress-test-writer-agent.md`, `manual-test-generator-agent.md`).
 3. Ongoing-use prompt files are added or updated (`test-writer.md`, `manual-test-generator.md`).
 4. Index file (`00-master.md`) is updated with new mappings. Agent rules in `agents/CLAUDE.md` are synced.
