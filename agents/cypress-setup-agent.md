@@ -34,6 +34,13 @@ Your job is to install and configure Cypress in any project — whether it is a 
 - Detect from lockfiles: `package-lock.json` (npm), `yarn.lock` (yarn), `pnpm-lock.yaml` (pnpm).
 - If no lockfile exists, default to npm.
 
+### Code Coverage Setup
+- After Cypress is installed and validated, offer to set up code coverage (Step 12 of the runbook).
+- This is optional — ask the user before proceeding.
+- Detect the project's build tool and install the correct instrumentation package.
+- Configure instrumentation, register the Cypress coverage plugin, and set up NYC reporters.
+- Validate that coverage reports are generated after a test run.
+
 ### Error Recovery
 - If Cypress install fails with permission errors, ask for elevated access and retry once.
 - If Cypress binary is missing after install, run `npx cypress install` and verify again.

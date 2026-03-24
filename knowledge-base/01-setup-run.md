@@ -307,3 +307,253 @@ Action Required:
 - **SUCCESS:** All steps passed. If smoke test failed but `npx cypress open` worked, this is still SUCCESS — add a note: "Smoke test skipped due to Windows 11 compatibility — verified via Cypress GUI."
 - **PARTIAL:** Some steps failed but Cypress may still be usable. List what succeeded and what failed. Provide exact next steps.
 - **FAILED:** A critical step failed and Cypress is not usable. Show the step that failed, the exact error, and what the user needs to do.
+
+---
+
+## Step 12: Code Coverage Setup (Optional)
+
+This step sets up code coverage instrumentation so that when Cypress tests run, they report which lines/branches/functions of the application source code were executed.
+
+**Ask the user before proceeding:**
+> "Would you like to set up code coverage for Cypress? This instruments your app code so test runs generate coverage reports showing which lines were exercised."
+
+- **If user agrees:** Proceed with Step 12.
+- **If user declines:** Skip to Final Report. Coverage can be added later.
+
+### 12.1 Detect Build Tool
+
+Examine the project to determine the build tool / framework:
+
+| Check | Build Tool | Instrumentation Package |
+|-------|-----------|------------------------|
+| `vite.config.ts` or `vite.config.js` exists | Vite | `vite-plugin-istanbul` |
+| `react-scripts` in `package.json` dependencies | Create React App (CRA) | `@cypress/instrument-cra` |
+| `next.config.js` or `next.config.mjs` exists | Next.js | `babel-plugin-istanbul` (requires forcing Babel over SWC) |
+| `angular.json` exists | Angular | `istanbul-instrumenter-loader` via `@angular-builders/custom-webpack` |
+| `webpack.config.js` or `webpack.config.ts` exists | Webpack (generic) | `istanbul-instrumenter-loader` |
+| None of the above | Plain HTML / other | `nyc instrument` CLI (manual instrumentation) |
+
+Report the detected build tool to the user before proceeding.
+
+### 12.2 Install Coverage Packages
+
+**Always install (all build tools):**
+
+| Package Manager | Command |
+|-----------------|---------|
+| npm | `npm install --save-dev @cypress/code-coverage nyc` |
+| yarn | `yarn add --dev @cypress/code-coverage nyc` |
+| pnpm | `pnpm add --save-dev @cypress/code-coverage nyc` |
+
+**Then install the build-tool-specific instrumentation package:**
+
+| Build Tool | npm Command |
+|-----------|-------------|
+| Vite | `npm install --save-dev vite-plugin-istanbul` |
+| CRA | `npm install --save-dev @cypress/instrument-cra` |
+| Next.js | `npm install --save-dev babel-plugin-istanbul` |
+| Angular | `npm install --save-dev @angular-builders/custom-webpack istanbul-instrumenter-loader` |
+| Webpack | `npm install --save-dev istanbul-instrumenter-loader` |
+| Plain HTML | No additional package — uses `nyc instrument` CLI |
+
+Adapt the command for the detected package manager (yarn/pnpm).
+
+### 12.3 Configure Instrumentation
+
+#### Vite
+
+Add the istanbul plugin to `vite.config.ts` (or `.js`):
+
+```typescript
+import istanbul from 'vite-plugin-istanbul';
+
+export default defineConfig({
+  plugins: [
+    // ...existing plugins
+    istanbul({
+      include: 'src/*',
+      exclude: ['node_modules', 'cypress'],
+      extension: ['.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte'],
+      cypress: true,
+      requireEnv: false,
+    }),
+  ],
+  build: {
+    sourcemap: true,
+  },
+});
+```
+
+> **Note:** `requireEnv: false` instruments code in all environments. To instrument only when running Cypress, set `requireEnv: true` and run with `VITE_COVERAGE=true`.
+
+#### Create React App (CRA)
+
+No build config changes needed. Modify the dev server start script in `package.json`:
+
+```json
+{
+  "scripts": {
+    "start:coverage": "react-scripts -r @cypress/instrument-cra start"
+  }
+}
+```
+
+Use `start:coverage` instead of `start` when running Cypress with coverage.
+
+#### Next.js
+
+Next.js uses SWC by default, which does not support Istanbul. You must force Babel by creating a `.babelrc` in the project root:
+
+```json
+{
+  "presets": ["next/babel"],
+  "plugins": ["istanbul"]
+}
+```
+
+> **Warning:** This disables SWC and uses Babel instead, which is slower. Inform the user of this trade-off.
+
+#### Angular
+
+Update `angular.json` to use custom webpack builder and create a custom webpack config that includes the istanbul instrumenter loader. This is project-specific — ask the user for guidance on their Angular build setup before modifying.
+
+#### Webpack (generic)
+
+Add `istanbul-instrumenter-loader` as a rule in the webpack config:
+
+```javascript
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules|cypress/,
+        enforce: 'post',
+        use: {
+          loader: 'istanbul-instrumenter-loader',
+          options: { esModules: true },
+        },
+      },
+    ],
+  },
+  devtool: 'source-map',
+};
+```
+
+#### Plain HTML / Other
+
+Instrument the source files manually before serving:
+
+```bash
+npx nyc instrument --compact=false src instrumented
+```
+
+Then serve the `instrumented/` directory instead of `src/`. Ask the user how they serve their application and adapt accordingly.
+
+### 12.4 Register Coverage Plugin in Cypress
+
+#### Update `cypress/support/e2e.ts` (or `.js`)
+
+Add at the top of the file:
+
+```typescript
+import '@cypress/code-coverage/support';
+```
+
+#### Update `cypress.config.ts` (or `.js`)
+
+Add the coverage task registration:
+
+```typescript
+import { defineConfig } from 'cypress';
+
+export default defineConfig({
+  e2e: {
+    // ...existing config
+    setupNodeEvents(on, config) {
+      require('@cypress/code-coverage/task')(on, config);
+      // IMPORTANT: return the config object
+      return config;
+    },
+  },
+});
+```
+
+> **If `setupNodeEvents` already exists:** Merge the coverage task into the existing function. Do not overwrite existing event handlers.
+
+### 12.5 Configure NYC Reporters
+
+Add NYC configuration to `package.json`:
+
+```json
+{
+  "nyc": {
+    "reporter": ["text", "lcov", "json-summary"],
+    "report-dir": "coverage",
+    "all": true,
+    "include": ["src/**/*.{js,ts,jsx,tsx,vue,svelte}"],
+    "exclude": [
+      "node_modules",
+      "cypress",
+      "**/*.spec.*",
+      "**/*.test.*",
+      "**/*.cy.*"
+    ]
+  }
+}
+```
+
+| Reporter | Purpose |
+|----------|---------|
+| `text` | Prints summary table to console |
+| `lcov` | Generates HTML report at `coverage/lcov-report/index.html` and `lcov.info` for CI uploads |
+| `json-summary` | Machine-readable summary at `coverage/coverage-summary.json` — used by CI to parse coverage % |
+
+### 12.6 Update .gitignore
+
+Append coverage output directories to `.gitignore`:
+
+```
+# Coverage reports
+coverage/
+.nyc_output/
+```
+
+Do not duplicate entries if they already exist.
+
+### 12.7 Validate Coverage Setup
+
+Run a quick test to verify coverage is working:
+
+```bash
+npx cypress run --headless
+```
+
+After the run, check:
+
+1. `.nyc_output/` directory exists and contains JSON files
+2. `coverage/` directory exists
+3. `coverage/lcov-report/index.html` exists (open in browser to verify)
+4. Console output includes a coverage summary table
+
+If coverage output is missing:
+- Verify `window.__coverage__` exists in the browser: add a test with `cy.window().then(win => expect(win.__coverage__).to.exist)`
+- Check that instrumentation is configured for the correct source directory
+- Check that source maps are enabled in the build config
+
+### 12.8 Update Final Report
+
+If coverage setup was performed, add these lines to the Final Report:
+
+```
+Coverage Setup:   PASS / FAIL
+Build Tool:       <detected build tool>
+Coverage Report:  coverage/lcov-report/index.html
+```
+
+And add to Action Required:
+
+```
+→ Run `npx cypress run` and open coverage/lcov-report/index.html to view the coverage report.
+→ To disable coverage temporarily: set CYPRESS_COVERAGE=false
+```

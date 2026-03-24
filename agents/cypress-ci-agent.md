@@ -46,6 +46,12 @@ Your job is to set up a CI workflow that runs Cypress tests on a pull request wh
 - If `gh` is not available or not authenticated, provide manual instructions.
 - If the label already exists, skip creation.
 
+### Code Coverage in CI
+- Check if `@cypress/code-coverage` exists in the project's `package.json` devDependencies.
+- If it exists, add the coverage reporting steps from Section 2.6 of the KB to the workflow.
+- This includes: extracting coverage %, posting a sticky PR comment, and uploading the coverage HTML report as an artifact.
+- If coverage is not set up, skip all coverage steps — the workflow runs tests without coverage.
+
 ### Idempotent Behavior
 - If the workflow file already exists with label-based triggering, skip creation.
 - If the label already exists, skip label creation.

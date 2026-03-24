@@ -255,6 +255,110 @@ The `ready-to-test` label must exist in the GitHub repository. The agent should:
 
 ---
 
+## 2.6 Code Coverage Reporting on PR
+
+If code coverage is set up in the project (check for `@cypress/code-coverage` in `package.json` devDependencies), add coverage reporting to the CI workflow.
+
+### How it works
+
+1. When Cypress runs with instrumentation enabled, `@cypress/code-coverage` generates coverage reports in `coverage/`.
+2. The workflow parses the coverage percentage from `coverage/coverage-summary.json`.
+3. A sticky PR comment is posted with the coverage summary (same comment updates on each push).
+
+### Add to the workflow
+
+Add these steps **after** the "Run Cypress tests" step in the workflow:
+
+```yaml
+      - name: Extract coverage percentage
+        if: always()
+        id: coverage
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            COVERAGE=$(node -e "const c = require('./coverage/coverage-summary.json'); console.log(c.total.lines.pct)")
+            echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+            echo "Coverage: $COVERAGE%"
+
+            # Determine emoji based on threshold
+            if [ "$(echo "$COVERAGE >= 90" | bc -l)" -eq 1 ]; then
+              echo "emoji=✅" >> $GITHUB_OUTPUT
+            elif [ "$(echo "$COVERAGE >= 70" | bc -l)" -eq 1 ]; then
+              echo "emoji=⚠️" >> $GITHUB_OUTPUT
+            else
+              echo "emoji=🔴" >> $GITHUB_OUTPUT
+            fi
+
+            # Generate text report for PR comment
+            COVERAGE_TEXT=$(npx nyc report --reporter=text 2>/dev/null || echo "See coverage artifact for full details.")
+            # Write multiline output using delimiter
+            echo "coverage_text<<EOF" >> $GITHUB_OUTPUT
+            echo "$COVERAGE_TEXT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "percentage=N/A" >> $GITHUB_OUTPUT
+            echo "No coverage report found"
+          fi
+        working-directory: ${{ env.CYPRESS_ROOT || '.' }}
+
+      - name: Post coverage comment on PR
+        if: always() && steps.coverage.outputs.percentage != 'N/A'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: cypress-coverage
+          message: |
+            ### ${{ steps.coverage.outputs.emoji }} Cypress Test Coverage: ${{ steps.coverage.outputs.percentage }}%
+
+            <details>
+            <summary>Coverage Details</summary>
+
+            ```text
+            ${{ steps.coverage.outputs.coverage_text }}
+            ```
+
+            </details>
+
+            <!-- Sticky Pull Request Comment -->
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-coverage-report
+          path: ${{ env.CYPRESS_ROOT || '.' }}/coverage/
+          retention-days: 14
+```
+
+### Coverage thresholds
+
+The PR comment uses color-coded indicators:
+
+| Coverage | Indicator | Meaning |
+|----------|-----------|---------|
+| >= 90% | ✅ | Good coverage |
+| >= 70% | ⚠️ | Acceptable, room for improvement |
+| < 70% | 🔴 | Low coverage, needs attention |
+
+These thresholds are defaults. The user can adjust them in the workflow.
+
+### If coverage is NOT set up
+
+If `@cypress/code-coverage` is not in the project's devDependencies, skip all coverage steps. The workflow runs Cypress tests without coverage — pass/fail only. Do not add coverage steps to the workflow.
+
+### Subdirectory support
+
+If Cypress is in a subdirectory, set the `CYPRESS_ROOT` env variable at the job level:
+
+```yaml
+jobs:
+  cypress-run:
+    env:
+      CYPRESS_ROOT: cypress-tests
+```
+
+The coverage steps use `${{ env.CYPRESS_ROOT || '.' }}` to resolve paths correctly.
+
+---
+
 ## 3. Final Report
 
 After completing the setup, show the following report:
@@ -273,6 +377,7 @@ Base URL:         <wait-on URL>
 Preflight:        PASS / FAIL
 Workflow Created: PASS / SKIPPED (already exists)
 Label Created:    PASS / SKIPPED (already exists)
+Coverage in CI:   PASS / SKIPPED (not set up) / N/A
 ----------------------------------------
 Overall Status:   SUCCESS / PARTIAL / FAILED
 ========================================
