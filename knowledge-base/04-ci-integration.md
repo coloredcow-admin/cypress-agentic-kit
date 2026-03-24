@@ -261,11 +261,50 @@ If code coverage is set up in the project (check for `@cypress/code-coverage` in
 
 ### How it works
 
-1. When Cypress runs with instrumentation enabled, `@cypress/code-coverage` generates coverage reports in `coverage/`.
-2. The workflow parses the coverage percentage from `coverage/coverage-summary.json`.
-3. A sticky PR comment is posted with the coverage summary (same comment updates on each push).
+1. The app must be **built or started with instrumentation enabled** so that `window.__coverage__` is available at runtime.
+2. When Cypress runs, `@cypress/code-coverage` reads `window.__coverage__` and generates reports in `coverage/`.
+3. The workflow parses the coverage percentage from `coverage/coverage-summary.json`.
+4. A sticky PR comment is posted with the coverage summary (same comment updates on each push).
 
-### Add to the workflow
+### Modify the build/start command for coverage
+
+The normal build does NOT include instrumentation. The CI workflow must use the coverage-enabled build/start command. Check the project's `package.json` for a coverage-specific script and use it in the workflow.
+
+| Build Tool | What to change in the workflow |
+|-----------|-------------------------------|
+| **Vite** | If `requireEnv: true` in vite config, add `env: VITE_COVERAGE: true` to the Cypress step. If `requireEnv: false`, no change needed — instrumentation is always on |
+| **CRA** | Change the `start` command from `npm start` to `npm run start:coverage` (which runs `react-scripts -r @cypress/instrument-cra start`) |
+| **Next.js** | No change needed — `.babelrc` with istanbul plugin instruments automatically on build |
+| **Webpack** | No change needed — `istanbul-instrumenter-loader` instruments automatically on build |
+| **Plain HTML** | Add a build step before Cypress: `npx nyc instrument --compact=false src instrumented` and serve the `instrumented/` directory |
+
+If no coverage-specific script exists in `package.json`, ask the user how the instrumented build is triggered.
+
+**Example — adding env var for Vite:**
+
+```yaml
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run dev
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 120
+        env:
+          VITE_COVERAGE: true
+```
+
+**Example — changing start command for CRA:**
+
+```yaml
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run start:coverage
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+```
+
+### Add coverage reporting steps
 
 Add these steps **after** the "Run Cypress tests" step in the workflow:
 
