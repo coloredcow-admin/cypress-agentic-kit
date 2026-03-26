@@ -488,7 +488,7 @@ Add NYC configuration to `package.json`:
 ```json
 {
   "nyc": {
-    "reporter": ["text", "lcov", "json-summary"],
+    "reporter": ["text", "json-summary"],
     "report-dir": "coverage",
     "all": true,
     "include": ["src/**/*.{js,ts,jsx,tsx,vue,svelte}"],
@@ -505,8 +505,7 @@ Add NYC configuration to `package.json`:
 
 | Reporter | Purpose |
 |----------|---------|
-| `text` | Prints summary table to console |
-| `lcov` | Generates HTML report at `coverage/lcov-report/index.html` and `lcov.info` for CI uploads |
+| `text` | Prints summary table to console and used in PR comment |
 | `json-summary` | Machine-readable summary at `coverage/coverage-summary.json` — used by CI to parse coverage % |
 
 ### 12.6 Update .gitignore
@@ -533,7 +532,7 @@ After the run, check:
 
 1. `.nyc_output/` directory exists and contains JSON files
 2. `coverage/` directory exists
-3. `coverage/lcov-report/index.html` exists (open in browser to verify)
+3. `coverage/coverage-summary.json` exists
 4. Console output includes a coverage summary table
 
 If coverage output is missing:
@@ -548,12 +547,11 @@ If coverage setup was performed, add these lines to the Final Report:
 ```
 Coverage Setup:   PASS / FAIL
 Build Tool:       <detected build tool>
-Coverage Report:  coverage/lcov-report/index.html
 ```
 
 And add to Action Required:
 
 ```
-→ Run `npx cypress run` and open coverage/lcov-report/index.html to view the coverage report.
+→ Run `npx cypress run` to generate coverage. Check console output for the summary table.
 → To disable coverage temporarily: set CYPRESS_COVERAGE=false
 ```

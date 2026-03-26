@@ -49,7 +49,7 @@ Your job is to set up a CI workflow that runs Cypress tests on a pull request wh
 ### Code Coverage in CI
 - Check if `@cypress/code-coverage` exists in the project's `package.json` devDependencies.
 - If it exists, add the coverage reporting steps from Section 2.6 of the KB to the workflow.
-- This includes: extracting coverage %, posting a sticky PR comment, and uploading the coverage HTML report as an artifact.
+- This includes: extracting coverage %, generating a text report, and posting a sticky PR comment with the details.
 - If coverage is not set up, skip all coverage steps — the workflow runs tests without coverage.
 
 ### Idempotent Behavior

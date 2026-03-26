@@ -263,8 +263,8 @@ If code coverage is set up in the project (check for `@cypress/code-coverage` in
 
 1. The app must be **built or started with instrumentation enabled** so that `window.__coverage__` is available at runtime.
 2. When Cypress runs, `@cypress/code-coverage` reads `window.__coverage__` and generates reports in `coverage/`.
-3. The workflow parses the coverage percentage from `coverage/coverage-summary.json`.
-4. A sticky PR comment is posted with the coverage summary (same comment updates on each push).
+3. The workflow parses the coverage percentage from `coverage/coverage-summary.json` and generates a text report.
+4. A sticky PR comment is posted with the coverage percentage and detailed text report (same comment updates on each push).
 
 ### Modify the build/start command for coverage
 
@@ -309,62 +309,47 @@ If no coverage-specific script exists in `package.json`, ask the user how the in
 Add these steps **after** the "Run Cypress tests" step in the workflow:
 
 ```yaml
-      - name: Extract coverage percentage
+      - name: Generate coverage report
         if: always()
         id: coverage
         run: |
           if [ -f coverage/coverage-summary.json ]; then
+            # Extract total line coverage percentage
             COVERAGE=$(node -e "const c = require('./coverage/coverage-summary.json'); console.log(c.total.lines.pct)")
-            echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
             echo "Coverage: $COVERAGE%"
 
             # Determine emoji based on threshold
             if [ "$(echo "$COVERAGE >= 90" | bc -l)" -eq 1 ]; then
-              echo "emoji=✅" >> $GITHUB_OUTPUT
+              EMOJI="🟢"
             elif [ "$(echo "$COVERAGE >= 70" | bc -l)" -eq 1 ]; then
-              echo "emoji=⚠️" >> $GITHUB_OUTPUT
+              EMOJI="🟡"
             else
-              echo "emoji=🔴" >> $GITHUB_OUTPUT
+              EMOJI="🔴"
             fi
 
-            # Generate text report for PR comment
-            COVERAGE_TEXT=$(npx nyc report --reporter=text 2>/dev/null || echo "See coverage artifact for full details.")
-            # Write multiline output using delimiter
-            echo "coverage_text<<EOF" >> $GITHUB_OUTPUT
-            echo "$COVERAGE_TEXT" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            # Generate text report
+            npx nyc report --reporter=text > coverage.txt 2>/dev/null || echo "Coverage report generation failed" > coverage.txt
+
+            # Build PR comment
+            echo "### $EMOJI Cypress Test Coverage: $COVERAGE%" > cov_comment.txt
+            echo "" >> cov_comment.txt
+            echo '```text' >> cov_comment.txt
+            cat coverage.txt >> cov_comment.txt
+            echo '```' >> cov_comment.txt
           else
-            echo "percentage=N/A" >> $GITHUB_OUTPUT
             echo "No coverage report found"
+            echo "### ⚠️ Cypress Test Coverage: N/A" > cov_comment.txt
+            echo "" >> cov_comment.txt
+            echo "No coverage data was generated. Check that the app is running with instrumentation enabled." >> cov_comment.txt
           fi
         working-directory: ${{ env.CYPRESS_ROOT || '.' }}
 
       - name: Post coverage comment on PR
-        if: always() && steps.coverage.outputs.percentage != 'N/A'
+        if: always() && hashFiles(format('{0}/cov_comment.txt', env.CYPRESS_ROOT || '.'))
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: cypress-coverage
-          message: |
-            ### ${{ steps.coverage.outputs.emoji }} Cypress Test Coverage: ${{ steps.coverage.outputs.percentage }}%
-
-            <details>
-            <summary>Coverage Details</summary>
-
-            ```text
-            ${{ steps.coverage.outputs.coverage_text }}
-            ```
-
-            </details>
-
-            <!-- Sticky Pull Request Comment -->
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-coverage-report
-          path: ${{ env.CYPRESS_ROOT || '.' }}/coverage/
-          retention-days: 14
+          path: ${{ env.CYPRESS_ROOT || '.' }}/cov_comment.txt
 ```
 
 ### Coverage thresholds
@@ -427,6 +412,7 @@ How to use:
 3. Cypress tests will run automatically.
 4. Check the Actions tab for results.
 5. On failure, download screenshots from the workflow artifacts.
+6. If coverage is set up, the PR comment will show coverage % and a detailed text report.
 
 Action Required:
 → Verify that the dev server command and base URL are correct for your project.
