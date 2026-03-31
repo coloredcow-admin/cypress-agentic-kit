@@ -39,12 +39,10 @@ Your job is to set up a CI workflow that runs Cypress tests on a pull request wh
 - For non-Node projects, add app setup steps (language runtime, dependencies, start command) before the Cypress step. Omit the `start` field from cypress-io/github-action since the app is started in a prior step.
 - Adapt the workflow for the detected package manager (npm, yarn, pnpm).
 - Include artifact uploads for screenshots on failure.
-- Ensure the workflow triggers only on the `ready-to-test` label.
+- Ensure the workflow triggers only on the `ready to test` label.
 
-### Label Setup
-- Attempt to create the `ready-to-test` label using `gh` CLI.
-- If `gh` is not available or not authenticated, provide manual instructions.
-- If the label already exists, skip creation.
+### Label Verification
+- Check that the `ready to test` label exists in the GitHub repository (Issues → Labels) before proceeding.
 
 ### Code Coverage in CI
 - Check if `@cypress/code-coverage` exists in the project's `package.json` devDependencies.
@@ -54,7 +52,6 @@ Your job is to set up a CI workflow that runs Cypress tests on a pull request wh
 
 ### Idempotent Behavior
 - If the workflow file already exists with label-based triggering, skip creation.
-- If the label already exists, skip label creation.
 - Never redo what is already done.
 
 ## Output Requirements
@@ -74,4 +71,5 @@ At the end, show the **Final Report** as defined in Section 3 of the KB.
 - Do not overwrite existing CI workflow files without asking.
 - Do not modify application code or Cypress tests — this agent only creates CI configuration.
 - Do not guess the dev server command or base URL — ask when uncertain.
+- Do not create or attempt to create GitHub labels.
 - Do not read KB sections outside your mapping.

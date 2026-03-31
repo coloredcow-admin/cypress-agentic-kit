@@ -77,7 +77,7 @@ If a CI workflow file already exists that runs Cypress (e.g., `.github/workflows
 
 ### 2.1 Trigger: Label-based execution
 
-The workflow triggers when a specific label is added to a pull request. The label name is `ready-to-test`.
+The workflow triggers when a specific label is added to a pull request. The label name is `ready to test`.
 
 **Why label-based?** Not every PR push should trigger a full Cypress run. The developer decides when the PR is ready for testing by adding the label. This avoids wasting CI minutes on work-in-progress PRs.
 
@@ -96,7 +96,7 @@ on:
 
 jobs:
   cypress-run:
-    if: github.event.label.name == 'ready-to-test'
+    if: github.event.label.name == 'ready to test'
     runs-on: ubuntu-latest
 
     steps:
@@ -233,25 +233,9 @@ Replace `<app-setup-steps>` in the template with steps specific to the project's
 > - The `start` field in cypress-io/github-action should be omitted — the app is already started in a prior step.
 > - `working-directory` and `install: false` are required on the Cypress action step.
 
-### 2.5 Label creation
+### 2.5 Label verification
 
-The `ready-to-test` label must exist in the GitHub repository. The agent should:
-
-1. Check if the label already exists:
-   ```bash
-   gh label list | grep "ready-to-test"
-   ```
-
-2. If it does not exist, create it:
-   ```bash
-   gh label create "ready-to-test" --description "Triggers Cypress CI run on this PR" --color "0E8A16"
-   ```
-
-3. If `gh` CLI is not available or not authenticated, provide manual instructions:
-   > Go to GitHub → Repository → Issues → Labels → New Label
-   > - Name: `ready-to-test`
-   > - Description: Triggers Cypress CI run on this PR
-   > - Color: `#0E8A16` (green)
+Before the workflow can trigger, the `ready to test` label must exist in the GitHub repository. Cross-check that the label is available: **GitHub → Repository → Issues → Labels**.
 
 ---
 
@@ -393,14 +377,14 @@ After completing the setup, show the following report:
 ========================================
 CI Platform:      <detected platform>
 Workflow File:    <path to workflow file>
-Trigger:          Label "ready-to-test" added to PR
+Trigger:          Label "ready to test" added to PR
 Package Manager:  <npm/yarn/pnpm>
 Dev Server:       <start command>
 Base URL:         <wait-on URL>
 ----------------------------------------
 Preflight:        PASS / FAIL
 Workflow Created: PASS / SKIPPED (already exists)
-Label Created:    PASS / SKIPPED (already exists)
+Label Check:      Verified / Not found
 Coverage in CI:   PASS / SKIPPED (not set up) / N/A
 ----------------------------------------
 Overall Status:   SUCCESS / PARTIAL / FAILED
@@ -408,7 +392,7 @@ Overall Status:   SUCCESS / PARTIAL / FAILED
 
 How to use:
 1. Push your branch and create a PR.
-2. When ready to test, add the "ready-to-test" label to the PR.
+2. When ready to test, add the "ready to test" label to the PR.
 3. Cypress tests will run automatically.
 4. Check the Actions tab for results.
 5. On failure, download screenshots from the workflow artifacts.
@@ -424,6 +408,6 @@ Action Required:
 
 | Status | Meaning |
 |--------|---------|
-| SUCCESS | Workflow file created, label exists, all checks passed |
-| PARTIAL | Workflow created but label could not be created (e.g., no `gh` CLI), or user needs to confirm settings |
+| SUCCESS | Workflow file created, label verified, all checks passed |
+| PARTIAL | Workflow created but label not found, or user needs to confirm settings |
 | FAILED | Pre-flight failed (no Cypress, no tests) — agent stopped early |
