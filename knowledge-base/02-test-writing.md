@@ -8,6 +8,23 @@ Follow these sections sequentially. Each section must pass before proceeding to 
 
 Before writing any test, verify the environment is ready and understand what already exists.
 
+### Step 1.0: Verify node_modules is Installed
+
+Before running any Cypress commands, confirm that project dependencies are installed.
+
+Check whether the `node_modules` directory exists and is non-empty:
+```
+ls node_modules
+```
+
+- **If `node_modules` exists and contains packages:** Proceed to Step 1.1.
+- **If `node_modules` is missing or empty:** This is a **hard blocker**. Stop immediately and inform the user:
+  > "`node_modules` is missing or empty. Dependencies are not installed. Please run `npm install` (or `yarn install` / `pnpm install`) and then re-run the agent."
+
+  Do not proceed further. Do not attempt to run `npx cypress` or any other npm-based command — they will fail with `Cannot find module 'cypress'` and produce misleading errors.
+
+---
+
 ### Step 1.1: Verify Cypress Installation
 
 Run:
@@ -66,10 +83,11 @@ Check if any test files exist in the `cypress/e2e/` directory (or the path defin
 
 ### Pre-flight Summary
 
-After completing Steps 1.1–1.4, the agent must have:
+After completing Steps 1.0–1.4, the agent must have:
 
 | Item | Status |
 |------|--------|
+| node_modules | Exists and non-empty — confirmed |
 | Cypress version | Detected |
 | Config file | Read — baseUrl, specPattern, supportFile extracted |
 | Custom commands | Listed (or none found) |
@@ -168,6 +186,28 @@ The agent must have answers for:
 | Dev server URL | Yes (needed for baseUrl context) |
 
 If any required item is missing from the structure file, ask the user to fill in the gaps. Do not guess.
+
+### Step 2.5: Resolve the App Entry Point URL
+
+Before writing any `cy.visit()` call, confirm what URL actually loads the application. Do not assume `cy.visit('/')` loads the app — verify it.
+
+**Read the `start` (or `dev`) script from `package.json` and apply this logic:**
+
+| Server tool | Check | Risk |
+|-------------|-------|------|
+| `serve`, `http-server`, `live-server` | Does `index.html` exist in the served root directory? | If no `index.html`, `/` serves a directory listing — not the app |
+| `vite`, `webpack-dev-server`, `next dev`, `react-scripts start` | These always serve the app at `/` | No risk — `cy.visit('/')` loads the app |
+
+**Resolution steps:**
+
+1. Identify the server tool from the `start`/`dev` script
+2. If the tool is `serve`, `http-server`, or `live-server`:
+   - Check if `index.html` exists in the directory being served
+   - If `index.html` is missing, look at the project structure (Step 2.1–2.3) to find the actual app HTML file (e.g., `app.html`, `temp-design.html`)
+   - Derive the correct visit path: `cy.visit('/temp-design.html')` — not `cy.visit('/')`
+3. Note this entry point path. Use it in every `cy.visit()` call in the tests.
+
+**Rule:** Never write `cy.visit('/')` without first verifying it serves the app. The entry point is a fact to derive from the project — not an assumption.
 
 Only proceed to Section 3 when the project structure is confirmed.
 
@@ -722,6 +762,18 @@ cy.get('[data-cy="user-count"]').invoke('text').then((text) => {
 const text = await cy.get('[data-cy="user-count"]').invoke('text')
 ```
 
+### 7.7: Version-Specific Pattern Compatibility
+
+The Cypress version was read during pre-flight (Section 1, Step 1.1). Use it here. Before writing any test that uses the patterns below, cross-check the installed version against this table. If a pattern is marked broken, use the listed alternative instead.
+
+| Pattern | Broken in | Why | Use instead |
+|---------|-----------|-----|-------------|
+| `cy.spy()` or `cy.stub()` inside `onBeforeLoad` option of `cy.visit()` | Cypress 13+ | `onBeforeLoad` runs before the page's JS executes. Spying on `window` methods before they exist is unreliable — the spy may be set up on a stale window object that gets replaced when the page loads. | Use `cy.intercept()` to observe/stub network calls. For window method stubs, use `cy.window().then(win => cy.stub(win, 'methodName'))` after visit. |
+| `cy.route()` | Cypress 6+ | Removed. | Use `cy.intercept()`. |
+| `cy.server()` | Cypress 6+ | Removed along with `cy.route()`. | Not needed — `cy.intercept()` works without it. |
+
+**Rule:** If the installed Cypress version is 13 or higher, never write `cy.spy()` or `cy.stub()` inside `onBeforeLoad`. If the installed version is 6 or higher, never use `cy.route()` or `cy.server()`.
+
 Only proceed to Section 8 when command patterns are understood.
 
 ---
@@ -1107,6 +1159,7 @@ When creating or modifying files, the agent must:
 - **Show each file change separately** — test file creation, `data-cy` attribute additions, custom command additions, fixture file creation
 - **Explain what each change does** in one line — not a paragraph, just enough context
 - **Never silently modify files** — every change must be visible to the user
+- **After editing any file, re-read it and verify the change is complete** — confirm that every affected occurrence was updated, not just the first one. Do not move on until the verification is done.
 
 ### 10.3: After Writing
 

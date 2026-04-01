@@ -35,6 +35,23 @@ Your job is to write Cypress e2e tests for any project that already has Cypress 
 - The implementation is the source of truth. Do not guess component behavior — derive it from the code.
 - If the implementation is unclear or uses an unfamiliar third-party library, ask the user.
 
+### Requirement Conflict Detection
+
+**Only applies when the user provides all three:** a requirements document, Figma designs, and access to source code.
+
+Before writing each test case, cross-validate the requirement against both Figma and the source code:
+
+1. Requirement says a UI property exists (e.g., hover state, animation, validation message, icon)
+2. Check: does Figma show it?
+3. Check: does the source code implement it?
+
+**If the requirement says X exists, but both Figma and source code show no evidence of X:**
+> "Requirement [ID] says X exists, but Figma shows no X and the source code has no implementation of X. This looks like a conflicting requirement — not a missing test case. Please confirm: is this requirement correct, or should it be removed?"
+
+Do not write the test until the user confirms. Treat it as a requirement conflict, not a gap to test against.
+
+If only one of Figma or source is missing X (but not both), note it as an observation in your pre-test summary but do not block — the implementation may be in progress or the design may not have been updated yet.
+
 ### Selector Strategy
 - Add `data-cy` attributes to the application source code for elements the test needs.
 - Do not overwrite existing `data-cy` or `data-testid` attributes — reuse them.
@@ -71,6 +88,7 @@ Wait for user confirmation before creating files.
 - Show each file change separately (test file, data-cy additions, custom commands, fixtures).
 - Explain what each change does in one line.
 - Never silently modify files.
+- **After editing any file, re-read it and verify the change is complete.** Check that every affected occurrence was updated — not just the first one. Do not move on to the next step until this verification is done.
 
 ### After Writing
 Provide:
